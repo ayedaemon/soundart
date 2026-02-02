@@ -21,6 +21,9 @@ uniform vec2 uMouseClick;      // Last click position
 
 uniform float uLayerFibonacci;
 uniform float uLayerFibonacciZoom;
+uniform float uLayerFibonacciPoints;
+uniform float uLayerFibonacciSpeed;
+uniform float uLayerFibonacciAngle;
 uniform float uLayerFibonacciTheme;
 uniform float uLayerFibonacciSensitivity;
 uniform float uLayerFibonacciMouseSens;
@@ -79,6 +82,12 @@ uniform float uLayerHopalongZoom;
 uniform float uLayerHopalongTheme;
 uniform float uLayerHopalongSensitivity;
 uniform float uLayerHopalongMouseSens;
+uniform float uLayerMetatron;
+uniform float uLayerMetatronZoom;
+uniform float uLayerMetatronRings;
+uniform float uLayerMetatronTheme;
+uniform float uLayerMetatronSensitivity;
+uniform float uLayerMetatronMouseSens;
 uniform sampler2D uReactionTex;
 uniform sampler2D uFeedbackTex;
 uniform float uFeedbackReady;
@@ -101,6 +110,7 @@ varying vec2 vUv;
 #include "layers/cubescape.glsl"
 #include "layers/spires.glsl"
 #include "layers/hopalong.glsl"
+#include "layers/metatron.glsl"
 
 void main() {
     vec2 uv = vUv * 2.0 - 1.0;
@@ -122,6 +132,7 @@ void main() {
     vec2 uvCubescape = uv / max(0.001, uLayerCubescapeZoom);
     vec2 uvSpires = uv / max(0.001, uLayerSpiresZoom);
     vec2 uvHopalong = uv / max(0.001, uLayerHopalongZoom);
+    vec2 uvMetatron = uv / max(0.001, uLayerMetatronZoom);
 
     vec3 baseColor = vec3(0.0);
     float beatFibonacci = uBeat * uLayerFibonacciSensitivity;
@@ -146,8 +157,10 @@ void main() {
     float trebleSpires = uTreble * uLayerSpiresSensitivity;
     float beatHopalong = uBeat * uLayerHopalongSensitivity;
     float energyHopalong = uEnergy * uLayerHopalongSensitivity;
+    float beatMetatron = uBeat * uLayerMetatronSensitivity;
+    float energyMetatron = uEnergy * uLayerMetatronSensitivity;
 
-    baseColor += layerFibonacci(uvFibonacci, uTime, beatFibonacci, uLayerFibonacci, uLayerFibonacciTheme);
+    baseColor += layerFibonacci(uvFibonacci, uTime, beatFibonacci, uLayerFibonacci, uLayerFibonacciPoints, uLayerFibonacciSpeed, uLayerFibonacciAngle, uLayerFibonacciTheme);
     baseColor += layerFlower(uvFlower, uTime, beatFlower, uLayerFlower, uLayerFlowerTheme);
     baseColor += layerLissajous(uvLissajous, uTime, energyLissajous, uLayerLissajous, uLayerLissajousTheme);
     baseColor += layerMandala(uvMandala, uTime, beatMandala, energyMandala, uLayerMandala, uLayerMandalaTheme);
@@ -206,6 +219,15 @@ void main() {
         uLayerHopalong,
         uLayerHopalongMouseSens,
         uLayerHopalongTheme
+    );
+    baseColor += layerMetatron(
+        uvMetatron,
+        uTime,
+        beatMetatron,
+        energyMetatron,
+        uLayerMetatron,
+        uLayerMetatronRings,
+        uLayerMetatronTheme
     );
 
     vec3 color = baseColor / (vec3(1.0) + baseColor);

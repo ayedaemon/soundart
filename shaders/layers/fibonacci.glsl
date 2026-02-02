@@ -1,18 +1,26 @@
 // ============================================================================
 // LAYER: Fibonacci
-// Golden ratio spiral points
+// Golden ratio spiral with phyllotaxis pattern
 // ============================================================================
 
-vec3 layerFibonacci(vec2 uv, float time, float beat, float intensity, float theme) {
+vec3 layerFibonacci(vec2 uv, float time, float beat, float intensity, float numPoints, float speed, float angleMult, float theme) {
     if (intensity <= 0.0) return vec3(0.0);
     
     float fiboField = 0.0;
-    float numPoints = COMPLEXITY;
+    
+    // Phyllotaxis angle - GOLDEN_ANGLE multiplied by user control
+    // 1.0 = perfect golden angle (137.5°)
+    // < 1.0 = counter-clockwise swirl
+    // > 1.0 = clockwise swirl
+    float phyllotaxisAngle = GOLDEN_ANGLE * angleMult;
+    
+    // Rotation speed
+    float rotationSpeed = speed * 0.2;
     
     for (float i = 1.0; i < 200.0; i++) {
         if (i >= numPoints) break;
         
-        float angle = i * GOLDEN_ANGLE + time * 0.2;
+        float angle = i * phyllotaxisAngle + time * rotationSpeed;
         float radius = sqrt(i) * 0.05;
         vec2 pos = vec2(cos(angle), sin(angle)) * radius;
         
