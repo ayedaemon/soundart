@@ -1,0 +1,57 @@
+services:
+  # Build static files to build/
+  # Note: We build to internal /app/build then copy to mounted /app/output
+  # because SvelteKit's adapter needs to delete/recreate the build directory
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/app/src:ro
+      - ./static:/app/static:ro
+      - ./build:/app/output
+      - ./svelte.config.js:/app/svelte.config.js:ro
+      - ./vite.config.ts:/app/vite.config.ts:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+    command: sh -c "npx svelte-kit sync && npm run build && rm -rf /app/output/* && cp -r /app/build/* /app/output/"
+
+  # Vite dev server with HTTPS + hot reload
+  # Access via https://localhost:5173 or https://<lan-ip>:5173
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src:/app/src
+      - ./static:/app/static:ro
+      - ./package.json:/app/package.json:ro
+      - ./node_modules:/app/node_modules
+      - ./svelte.config.js:/app/svelte.config.js:ro
+      - ./vite.config.ts:/app/vite.config.ts:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+    command: sh -c "if [ ! -d node_modules/three ]; then npm install --no-package-lock; fi && npx svelte-kit sync && npm run dev -- --host"
+
+  # Preview production build (HTTP only)
+  # For HTTPS testing of production build, deploy to GitHub Pages
+  preview:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4173:4173"
+    volumes:
+      - ./build:/app/build:ro
+      - ./svelte.config.js:/app/svelte.config.js:ro
+      - ./vite.config.ts:/app/vite.config.ts:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+    command: sh -c "npm run preview -- --host"
+
+  # Initial setup - install dependencies
+  init:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: sh -c "npm install && echo 'Dependencies installed successfully!'"
