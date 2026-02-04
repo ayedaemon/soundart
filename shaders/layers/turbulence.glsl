@@ -1,6 +1,10 @@
+
+
+
 // ============================================================================
 // LAYER: Turbulence
-// Audio-reactive turbulence (inspired by reflected turbulence)
+// Audio-reactive turbulence with flow distortion
+// OPTIMIZED: Quality-based octave reduction, reduced warp octaves
 // ============================================================================
 
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 288.704; }
@@ -35,7 +39,7 @@ float snoise(vec2 v) {
     return 130.0 * dot(m, g);
 }
 
-// Max octaves supported
+
 #define MAX_OCTAVES 6
 
 float turbulenceN(in vec2 st, int octaves) {
@@ -45,7 +49,7 @@ float turbulenceN(in vec2 st, int octaves) {
     if (oct < 1) oct = 1;
     if (oct > MAX_OCTAVES) oct = MAX_OCTAVES;
     
-    // Unroll or loop up to max
+
     for (int i = 0; i < MAX_OCTAVES; i++) {
         if (i >= oct) break;
         value += amplitude * abs(snoise(st));
@@ -59,29 +63,45 @@ vec3 layerTurbulence(vec2 uv, float time, float beat, float energy, float treble
     if (intensity <= 0.0) return vec3(0.0);
 
     vec2 st = uv * 0.5 + 0.5;
-    // Mirroring
+
     st.x = (st.x > 0.5) ? st.x : 1.0 - st.x;
     st.y = (st.y > 0.5) ? st.y : 1.0 - st.y;
 
     float beatBoost = 0.25 + beat * 0.75;
     
-    // Flow controls direction and speed influence
+
     float t = time * (0.35 + energy * 0.8) * (1.0 + abs(flow));
     vec2 flowDir = vec2(cos(flow * PI), sin(flow * PI));
 
-    // Performance: warping doesn't need full octave detail.
-    // Keep the main field sharp while making the coordinate warp cheaper.
+
+
+    // Quality-based octave reduction
+    float q = clamp(uQualityLevel, 0.0, 1.0);
+    
     int octaves = int(complexity + 0.5);
     if (octaves < 1) octaves = 1;
     if (octaves > MAX_OCTAVES) octaves = MAX_OCTAVES;
+    
+    // Scale octaves based on quality: Low quality uses fewer octaves
+    float effectiveOctaves = mix(float(octaves) * 0.5, float(octaves), smoothstep(0.3, 0.8, q));
+    octaves = int(effectiveOctaves + 0.5);
+    if (octaves < 1) octaves = 1;
+    if (octaves > MAX_OCTAVES) octaves = MAX_OCTAVES;
+    
     int warpOctaves = octaves;
     if (warpOctaves > 3) warpOctaves = 3;
+    
+    // Further reduce warp octaves on low quality
+    if (q < 0.4) {
+        warpOctaves = warpOctaves - 1;
+        if (warpOctaves < 1) warpOctaves = 1;
+    }
 
-    // Distort coordinates with noise
+
     st.x += turbulenceN(st * (1.2 + treble * 0.6) + t * flowDir.x, warpOctaves) * 0.45 * beatBoost;
     st.y += turbulenceN(st + vec2(1.0, 0.3) + t * flowDir.y, warpOctaves) * 0.25 * (0.6 + treble);
 
-    // Main pattern
+
     float field = turbulenceN(st * (4.5 + energy * 5.0), octaves);
     float mask = smoothstep(0.2, 0.9, field);
 

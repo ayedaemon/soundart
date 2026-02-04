@@ -1,3 +1,8 @@
+// ============================================================================
+// COMPOSITE SHADER
+// Main fragment shader that combines all visual layers
+// ============================================================================
+
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
 precision highp int;
@@ -6,11 +11,13 @@ precision mediump float;
 precision mediump int;
 #endif
 
-uniform vec2 uResolution;
-uniform float uTime;
-uniform float uBeat;
-uniform float uEnergy;
-uniform float uTreble;
+// Global Uniforms
+uniform vec2 uResolution; // Canvas resolution in pixels
+uniform float uTime;      // Time in seconds
+uniform float uBeat;      // Beat detection value (0.0 - 1.0)
+uniform float uEnergy;    // Overall audio energy (0.0 - 1.0)
+uniform float uTreble;    // High frequency energy (0.0 - 1.0)
+uniform float uQualityLevel; // Quality setting (0.0 - 1.0)
 
 // Mouse uniforms
 uniform vec2 uMouse;           // Normalized position (0-1)
@@ -19,7 +26,14 @@ uniform float uMouseSpeed;     // Velocity magnitude
 uniform float uMouseDown;      // Button pressed (0 or 1)
 uniform vec2 uMouseClick;      // Last click position
 
+// Gesture uniforms
+uniform vec2 uGestureHandPositions[4]; // Hand positions (normalized 0-1)
+uniform float uGestureHandCount;      // Number of detected hands (0-4)
+uniform vec2 uFaceCenter;             // Face center position (normalized 0-1)
+uniform float uFaceDetected;          // 0 or 1
+
 // --- Layer Uniforms ---
+// Each layer has a set of uniforms controlled by the UI
 
 // Lissajous
 uniform float uLayerLissajous;
@@ -30,6 +44,18 @@ uniform float uLayerLissajousFrequencies;
 uniform float uLayerLissajousSlices;
 uniform float uLayerLissajousDamping;
 uniform float uLayerLissajousThickness;
+
+// Cymatics
+uniform float uLayerCymatics;
+uniform float uLayerCymaticsSpeed;
+uniform float uLayerCymaticsZoom;
+uniform float uLayerCymaticsTheme;
+uniform float uLayerCymaticsMode;
+uniform float uLayerCymaticsM;
+uniform float uLayerCymaticsN;
+uniform float uLayerCymaticsThickness;
+uniform float uLayerCymaticsSharpness;
+uniform float uLayerCymaticsWarp;
 
 // Mandala
 uniform float uLayerMandala;
@@ -104,16 +130,19 @@ uniform float uLayerHopalongSlices;
 uniform float uLayerHopalongRotation;
 
 
-uniform sampler2D uFeedbackTex;
-uniform float uFeedbackReady;
+uniform sampler2D uFeedbackTex; // Texture containing the previous frame
+uniform float uFeedbackReady;   // Flag indicating if feedback texture is populated
 
-varying vec2 vUv;
+varying vec2 vUv; // Texture coordinates from vertex shader
 
+// Include common utilities and layer functions
+// The ShaderLoader handles these #include directives
 #include "common/constants.glsl"
 #include "common/colors.glsl"
 #include "common/hash.glsl"
 
 #include "layers/lissajous.glsl"
+#include "layers/cymatics.glsl"
 #include "layers/mandala.glsl"
 #include "layers/kaleidoscope.glsl"
 #include "layers/metatron.glsl"
@@ -125,6 +154,7 @@ varying vec2 vUv;
 
 
 void main() {
+    // Correct UVs for aspect ratio to ensure circles are circular
     vec2 uv = vUv * 2.0 - 1.0;
     uv.x *= uResolution.x / max(uResolution.y, 1.0);
     
@@ -133,6 +163,10 @@ void main() {
     mouseUV.x *= uResolution.x / max(uResolution.y, 1.0);
 
     vec3 finalColor = vec3(0.0);
+
+    // --- Layer Composition ---
+    // Each layer function returns a vec3 color which is added to the final color.
+    // Layers with intensity <= 0.001 are skipped for performance.
 
     // --- Geometric & Symmetry ---
 
@@ -157,6 +191,26 @@ void main() {
     if (uLayerLissajous > 0.001) {
         vec2 uvL = uv / max(0.001, uLayerLissajousZoom);
         vec3 layer = layerLissajous(uvL, uTime, uEnergy, uLayerLissajous, uLayerLissajousTheme, uLayerLissajousSpeed, uLayerLissajousFrequencies, uLayerLissajousSlices, uLayerLissajousDamping, uLayerLissajousThickness);
+        finalColor += layer;
+    }
+
+    if (uLayerCymatics > 0.001) {
+        vec2 uvL = uv / max(0.001, uLayerCymaticsZoom);
+        vec3 layer = layerCymatics(
+            uvL,
+            uTime * uLayerCymaticsSpeed,
+            uBeat,
+            uEnergy,
+            uTreble,
+            uLayerCymatics,
+            uLayerCymaticsTheme,
+            uLayerCymaticsMode,
+            uLayerCymaticsM,
+            uLayerCymaticsN,
+            uLayerCymaticsThickness,
+            uLayerCymaticsSharpness,
+            uLayerCymaticsWarp
+        );
         finalColor += layer;
     }
 
@@ -194,7 +248,8 @@ void main() {
         finalColor += layer;
     }
 
-    // Tone mapping / Saturation control could go here
+    // Tone mapping / Saturation control
+    // Simple Reinhard tone mapping to handle HDR values from additive blending
     vec3 color = finalColor / (vec3(1.0) + finalColor);
     gl_FragColor = vec4(color, 1.0);
 }

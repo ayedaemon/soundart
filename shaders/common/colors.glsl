@@ -1,8 +1,12 @@
+
+
+
+
 // ============================================================================
-// COLOR SYSTEM
+// COLOR UTILITIES
+// Functions for color space conversion and procedural palette generation
 // ============================================================================
 
-// HSL to RGB conversion
 vec3 hsl2rgb(vec3 hsl) {
     float h = hsl.x;
     float s = hsl.y;
@@ -23,15 +27,15 @@ vec3 hsl2rgb(vec3 hsl) {
     return rgb + m;
 }
 
-// ============================================================================
+
 vec3 themeLSD(float t) {
-    // Full spectral rainbow - reduced saturation for eye comfort
+
     float hue = t;
-    // Reduced from 0.9-1.0 to 0.75-0.85 for less strain
+
     float sat = 0.75 + 0.1 * sin(t * TAU * 6.0);
     float lum = 0.5 + 0.12 * sin(t * TAU * 3.0);
     
-    // Boost yellows/greens slightly for perceptual balance
+
     if (hue > 0.15 && hue < 0.45) {
         lum += 0.08;
     }
@@ -61,7 +65,7 @@ vec3 quadMix(vec3 a, vec3 b, vec3 c, vec3 d, float t) {
     return mix(d, a, smoothstep(3.0, 4.0, x));
 }
 
-// Warm sunset palette (reds/oranges/yellows)
+
 vec3 themeAnalog(float t) {
     vec3 a = vec3(1.0, 0.18, 0.12);
     vec3 b = vec3(1.0, 0.55, 0.12);
@@ -69,7 +73,7 @@ vec3 themeAnalog(float t) {
     return triMix(a, b, c, t);
 }
 
-// Cool aurora palette (teals/blues)
+
 vec3 themeComplement(float t) {
     vec3 a = vec3(0.05, 0.85, 0.7);
     vec3 b = vec3(0.1, 0.35, 1.0);
@@ -77,7 +81,7 @@ vec3 themeComplement(float t) {
     return triMix(a, b, c, t);
 }
 
-// Ultraviolet palette (purples/pinks)
+
 vec3 themeTriad(float t) {
     vec3 a = vec3(0.55, 0.15, 1.0);
     vec3 b = vec3(1.0, 0.2, 0.75);
@@ -85,18 +89,18 @@ vec3 themeTriad(float t) {
     return triMix(a, b, c, t);
 }
 
-// Neon duotone palette (acid green / hot pink)
-// Softened for eye comfort - reduced max intensity
+
+
 vec3 themeNeon(float t) {
-    vec3 a = vec3(0.1, 0.85, 0.4);    // Softened green (was 1.0)
-    vec3 b = vec3(0.9, 0.15, 0.75);   // Softened pink (was 1.0, 0.1)
-    // Add slight dark dip in transition for visual rest
+    vec3 a = vec3(0.1, 0.85, 0.4);
+    vec3 b = vec3(0.9, 0.15, 0.75);
+
     float x = fract(t);
-    float dip = 1.0 - 0.15 * sin(x * PI);  // 15% dip at midpoint
+    float dip = 1.0 - 0.15 * sin(x * PI);
     return mix(a, b, smoothstep(0.0, 1.0, x)) * dip;
 }
 
-// Split-complementary palette (teal / coral / violet)
+
 vec3 themeSplitComplement(float t) {
     vec3 a = vec3(0.08, 0.82, 1.0);
     vec3 b = vec3(1.0, 0.45, 0.2);
@@ -104,7 +108,7 @@ vec3 themeSplitComplement(float t) {
     return triMix(a, b, c, t);
 }
 
-// Analogous cool palette (teal -> blue -> violet)
+
 vec3 themeAnalogCool(float t) {
     vec3 a = vec3(0.08, 0.9, 0.75);
     vec3 b = vec3(0.15, 0.55, 1.0);
@@ -112,7 +116,7 @@ vec3 themeAnalogCool(float t) {
     return triMix(a, b, c, t);
 }
 
-// Tetradic palette (balanced 4-color wheel)
+
 vec3 themeTetradic(float t) {
     vec3 a = vec3(1.0, 0.3, 0.35);
     vec3 b = vec3(0.2, 0.9, 0.6);
@@ -121,7 +125,7 @@ vec3 themeTetradic(float t) {
     return quadMix(a, b, c, d, t);
 }
 
-// Pastel triad palette (soft harmony for layering)
+
 vec3 themePastelTriad(float t) {
     vec3 a = hsl2rgb(vec3(0.02, 0.5, 0.72));
     vec3 b = hsl2rgb(vec3(0.35, 0.5, 0.72));
@@ -129,29 +133,29 @@ vec3 themePastelTriad(float t) {
     return triMix(a, b, c, t);
 }
 
-// ============================================================================
-// ADVANCED COLOR THEORY THEMES
-// ============================================================================
 
-// Bioluminescent Abyss - Opponent color theory + low-key harmony
-// Uses blue-yellow opponent channel for natural visual comfort
+
+
+
+
+
 vec3 themeBioluminescent(float t) {
-    vec3 a = vec3(0.0, 0.08, 0.15);    // Deep ocean black-blue
-    vec3 b = vec3(0.0, 0.6, 0.8);      // Cyan bioluminescence
-    vec3 c = vec3(0.3, 1.0, 0.6);      // Electric green glow
-    vec3 d = vec3(0.0, 0.25, 0.4);     // Return to depth
+    vec3 a = vec3(0.0, 0.08, 0.15);
+    vec3 b = vec3(0.0, 0.6, 0.8);
+    vec3 c = vec3(0.3, 1.0, 0.6);
+    vec3 d = vec3(0.0, 0.25, 0.4);
     return quadMix(a, b, c, d, t);
 }
 
-// Iridescent Oil Slick - Thin-film interference simulation
-// Mimics physics of light interference on oil/soap films
+
+
 vec3 themeIridescent(float t) {
     float phase = t * 2.5;
-    vec3 a = vec3(0.1, 0.0, 0.3);      // Deep violet
-    vec3 b = vec3(0.0, 0.5, 0.6);      // Petroleum teal
-    vec3 c = vec3(0.9, 0.2, 0.5);      // Magenta shift
-    vec3 d = vec3(1.0, 0.8, 0.2);      // Gold highlight
-    vec3 e = vec3(0.2, 0.9, 0.4);      // Green flash
+    vec3 a = vec3(0.1, 0.0, 0.3);
+    vec3 b = vec3(0.0, 0.5, 0.6);
+    vec3 c = vec3(0.9, 0.2, 0.5);
+    vec3 d = vec3(1.0, 0.8, 0.2);
+    vec3 e = vec3(0.2, 0.9, 0.4);
     
     float x = fract(phase) * 5.0;
     if (x < 1.0) return mix(a, b, smoothstep(0.0, 1.0, x));
@@ -161,21 +165,21 @@ vec3 themeIridescent(float t) {
     return mix(e, a, smoothstep(0.0, 1.0, x - 4.0));
 }
 
-// Chromatic Aberration - Prismatic RGB dispersion
-// Creates "glitchy reality" effect - with dark rest points for comfort
+
+
 vec3 themeChromatic(float t) {
     float r = 0.5 + 0.5 * sin(t * TAU + 0.0);
     float g = 0.5 + 0.5 * sin(t * TAU + TAU / 3.0);
     float b = 0.5 + 0.5 * sin(t * TAU + 2.0 * TAU / 3.0);
-    // Reduced base luminance and added periodic dark rest (was 0.7 + 0.3)
+
     float lum = 0.5 + 0.35 * sin(t * TAU * 2.0);
-    // Additional subtle breathing for eye comfort
+
     lum *= 0.85 + 0.15 * sin(t * TAU * 0.5);
     return vec3(r, g, b) * lum;
 }
 
-// Golden Hour Liminal - Color temperature gradient
-// Warm-to-cool transition of dusk, inherently calming and dreamlike
+
+
 vec3 themeGoldenLiminal(float t) {
     vec3 warmGold = vec3(1.0, 0.75, 0.3);
     vec3 roseDust = vec3(0.85, 0.45, 0.55);
@@ -184,8 +188,8 @@ vec3 themeGoldenLiminal(float t) {
     return quadMix(warmGold, roseDust, twilight, deepIndigo, t);
 }
 
-// OKLCH Perceptual Rainbow - Perceptually uniform colorspace
-// Colors appear evenly spaced to human vision unlike HSL
+
+
 vec3 themeOKRainbow(float t) {
     float h = t * TAU;
     float L = 0.7 + 0.1 * sin(t * TAU * 3.0);
@@ -194,7 +198,7 @@ vec3 themeOKRainbow(float t) {
     float a = C * cos(h);
     float b = C * sin(h);
     
-    // Approximate Oklab to sRGB conversion
+
     float l_ = L + 0.3963377774 * a + 0.2158037573 * b;
     float m_ = L - 0.1055613458 * a - 0.0638541728 * b;
     float s_ = L - 0.0894841775 * a - 1.2914855480 * b;
@@ -210,8 +214,8 @@ vec3 themeOKRainbow(float t) {
     return clamp(lmsToRgb * lms, 0.0, 1.0);
 }
 
-// Synesthetic Violet - Bezold-Brücke shift exploitation
-// Violets with intensity-dependent hue shift for unstable feel
+
+
 vec3 themeSynesthetic(float t) {
     float intensity = 0.5 + 0.5 * sin(t * TAU * 2.0);
     float hueShift = intensity * 0.08;
@@ -223,87 +227,86 @@ vec3 themeSynesthetic(float t) {
     return triMix(a, b, c, t);
 }
 
-// Entropy Gradient - Maximum perceptual distance
-// High visual energy with void rest points
+
+
 vec3 themeEntropy(float t) {
-    vec3 electric = vec3(0.0, 1.0, 1.0);     // Cyan
-    vec3 voidColor = vec3(0.1, 0.0, 0.2);    // Near-black purple
-    vec3 plasma = vec3(1.0, 0.3, 0.0);       // Hot orange
-    vec3 matrix = vec3(0.0, 0.8, 0.2);       // Terminal green
+    vec3 electric = vec3(0.0, 1.0, 1.0);
+    vec3 voidColor = vec3(0.1, 0.0, 0.2);
+    vec3 plasma = vec3(1.0, 0.3, 0.0);
+    vec3 matrix = vec3(0.0, 0.8, 0.2);
     return quadMix(electric, voidColor, plasma, matrix, t);
 }
 
-// Velvet Depths - Low saturation + high value contrast
-// Less garish, more hypnotic with dramatic luminance shifts
+
+
 vec3 themeVelvet(float t) {
-    vec3 a = vec3(0.12, 0.08, 0.18);   // Deep velvet
-    vec3 b = vec3(0.55, 0.35, 0.65);   // Dusty mauve
-    vec3 c = vec3(0.9, 0.85, 0.95);    // Pearl white
-    vec3 d = vec3(0.25, 0.15, 0.35);   // Plum shadow
+    vec3 a = vec3(0.12, 0.08, 0.18);
+    vec3 b = vec3(0.55, 0.35, 0.65);
+    vec3 c = vec3(0.9, 0.85, 0.95);
+    vec3 d = vec3(0.25, 0.15, 0.35);
     return quadMix(a, b, c, d, t);
 }
 
-// Solar Flare - Warm analogous with black body radiation
-// Colors follow actual spectrum of heated materials
+
+
 vec3 themeSolarFlare(float t) {
-    vec3 a = vec3(0.1, 0.0, 0.0);      // Cool ember
-    vec3 b = vec3(0.8, 0.1, 0.0);      // Deep red heat
-    vec3 c = vec3(1.0, 0.6, 0.0);      // Orange plasma
-    vec3 d = vec3(1.0, 1.0, 0.7);      // White hot core
+    vec3 a = vec3(0.1, 0.0, 0.0);
+    vec3 b = vec3(0.8, 0.1, 0.0);
+    vec3 c = vec3(1.0, 0.6, 0.0);
+    vec3 d = vec3(1.0, 1.0, 0.7);
     return quadMix(a, b, c, d, t);
 }
 
-// ============================================================================
-// DARK THEMES - Eye-friendly for extended sessions
-// ============================================================================
 
-// Void Pulse - Colors emerge from and return to black
-// Perfect for bass drops and quiet passages
+
+
+
+
+
 vec3 themeVoidPulse(float t) {
     vec3 void_ = vec3(0.0, 0.0, 0.0);
     vec3 ember = vec3(0.4, 0.0, 0.1);
     vec3 flash = vec3(0.8, 0.2, 0.4);
     
-    // Asymmetric mix - more time in darkness (70%)
+
     float x = fract(t);
     if (x < 0.7) return mix(void_, ember, smoothstep(0.0, 0.7, x));
     return mix(ember, flash, smoothstep(0.7, 1.0, x));
 }
 
-// Starless Night - Near-monochrome deep blue
-// Single hue with extreme luminance variation, very easy on eyes
+
+
 vec3 themeStarless(float t) {
     float lum = 0.02 + 0.25 * pow(sin(t * PI), 2.0);
     float hue = 0.62 + 0.02 * sin(t * TAU);
     return hsl2rgb(vec3(hue, 0.6, lum));
 }
 
-// Event Horizon - Black with occasional bright accents
-// 80% darkness with dramatic accent bursts for builds/drops
+
+
 vec3 themeEventHorizon(float t) {
     vec3 black = vec3(0.0);
-    vec3 accretion = vec3(1.0, 0.4, 0.1);  // Hot orange
-    vec3 hawking = vec3(0.6, 0.8, 1.0);    // Blue-white
+    vec3 accretion = vec3(1.0, 0.4, 0.1);
+    vec3 hawking = vec3(0.6, 0.8, 1.0);
     
     float x = fract(t);
-    // 80% of the time in near-black
+
     if (x < 0.4) return mix(black, vec3(0.02), x / 0.4);
     if (x < 0.6) return mix(vec3(0.02), accretion, (x - 0.4) / 0.2);
     if (x < 0.8) return mix(accretion, hawking, (x - 0.6) / 0.2);
     return mix(hawking, black, (x - 0.8) / 0.2);
 }
 
-// ============================================================================
-// NEW COLOR THEORY THEMES (21-26)
-// ============================================================================
 
-// Cyberpunk / Vaporwave - Hot pink, cyan, purple on dark base
-// Popular retro-futuristic aesthetic for electronic music
+
+
+
+
 vec3 themeCyberpunk(float t) {
-    vec3 void_ = vec3(0.05, 0.01, 0.13);   // Deep purple-black base
-    vec3 hotPink = vec3(1.0, 0.08, 0.58);  // #FF1493
-    vec3 cyan = vec3(0.0, 1.0, 1.0);       // #00FFFF
-    vec3 purple = vec3(0.58, 0.0, 0.83);   // #9400D3
+    vec3 void_ = vec3(0.05, 0.01, 0.13);
+    vec3 hotPink = vec3(1.0, 0.08, 0.58);
+    vec3 cyan = vec3(0.0, 1.0, 1.0);
+    vec3 purple = vec3(0.58, 0.0, 0.83);
     
     float x = fract(t) * 4.0;
     if (x < 1.0) return mix(void_, hotPink, smoothstep(0.0, 1.0, x));
@@ -312,42 +315,42 @@ vec3 themeCyberpunk(float t) {
     return mix(purple, void_, smoothstep(0.0, 1.0, x - 3.0));
 }
 
-// Crimson Mono - Monochromatic warm (single hue, luminance variation)
-// Balances the cool Starless Night theme
+
+
 vec3 themeCrimsonMono(float t) {
-    // Single hue (red ~0.0) with saturation and luminance variation
-    float hue = 0.0 + 0.02 * sin(t * TAU);  // Slight hue drift
+
+    float hue = 0.0 + 0.02 * sin(t * TAU);
     float sat = 0.6 + 0.2 * sin(t * TAU * 2.0);
     float lum = 0.1 + 0.4 * pow(sin(t * PI), 2.0);
     
-    // Add warm cream accent at peaks
+
     vec3 base = hsl2rgb(vec3(hue, sat, lum));
-    vec3 cream = vec3(0.96, 0.87, 0.7);  // #F5DEB3
-    float accent = pow(sin(t * PI), 8.0);  // Sharp peaks
+    vec3 cream = vec3(0.96, 0.87, 0.7);
+    float accent = pow(sin(t * PI), 8.0);
     
     return mix(base, cream, accent * 0.4);
 }
 
-// Earth Tones - Natural organic palette
-// Terracotta, sage, sienna, clay - grounding aesthetic
+
+
 vec3 themeEarthTones(float t) {
-    vec3 terracotta = vec3(0.8, 0.45, 0.32);   // #CC7351
-    vec3 sage = vec3(0.61, 0.69, 0.53);        // #9CAF88
-    vec3 sienna = vec3(0.63, 0.32, 0.18);      // #A0522D
-    vec3 clay = vec3(0.72, 0.45, 0.2);         // #B87333
+    vec3 terracotta = vec3(0.8, 0.45, 0.32);
+    vec3 sage = vec3(0.61, 0.69, 0.53);
+    vec3 sienna = vec3(0.63, 0.32, 0.18);
+    vec3 clay = vec3(0.72, 0.45, 0.2);
     
     return quadMix(terracotta, sage, sienna, clay, t);
 }
 
-// True Complement - Pure 180° complementary (blue/orange)
-// Maximum color tension for high-energy moments
+
+
 vec3 themeTrueComplement(float t) {
-    vec3 blue = vec3(0.0, 0.4, 1.0);      // #0066FF
-    vec3 orange = vec3(1.0, 0.4, 0.0);    // #FF6600
+    vec3 blue = vec3(0.0, 0.4, 1.0);
+    vec3 orange = vec3(1.0, 0.4, 0.0);
     
-    // Sharp transition with slight overlap zone
+
     float x = fract(t);
-    // Add energy pulse in transition zone
+
     float energy = 1.0 + 0.15 * sin(t * TAU * 4.0);
     
     if (x < 0.45) return blue * energy;
@@ -355,38 +358,38 @@ vec3 themeTrueComplement(float t) {
     return orange * energy;
 }
 
-// Noir - Luminance-dominant with single accent
-// Grayscale + cyan accent for dramatic value contrast
+
+
 vec3 themeNoir(float t) {
-    // Grayscale base with dramatic luminance curve
+
     float lum = 0.05 + 0.5 * pow(sin(t * PI), 1.5);
     vec3 gray = vec3(lum);
     
-    // Cyan accent appears at luminance peaks
+
     vec3 accent = vec3(0.0, 1.0, 1.0);
     float accentStrength = pow(sin(t * PI), 6.0) * 0.6;
     
     return mix(gray, accent, accentStrength);
 }
 
-// Sepia - Vintage warm-tinted monochrome
-// Nostalgic aesthetic for acoustic/classical vibes
+
+
 vec3 themeSepia(float t) {
-    vec3 darkBrown = vec3(0.24, 0.14, 0.08);  // #3D2314
-    vec3 sepia = vec3(0.44, 0.26, 0.08);      // #704214
-    vec3 cream = vec3(0.96, 0.87, 0.7);       // #F5DEB3
-    vec3 antique = vec3(0.98, 0.92, 0.84);    // #FAEBD7
+    vec3 darkBrown = vec3(0.24, 0.14, 0.08);
+    vec3 sepia = vec3(0.44, 0.26, 0.08);
+    vec3 cream = vec3(0.96, 0.87, 0.7);
+    vec3 antique = vec3(0.98, 0.92, 0.84);
     
     return quadMix(darkBrown, sepia, cream, antique, t);
 }
 
-// Main palette selector
+
 vec3 palette(float t, float theme) {
     t = fract(t);
     float clampedTheme = clamp(theme, 0.0, 26.0);
     int themeIndex = int(floor(clampedTheme + 0.5));
     
-    // Original themes (0-8)
+
     if (themeIndex == 1) return themeAnalog(t);
     if (themeIndex == 2) return themeComplement(t);
     if (themeIndex == 3) return themeTriad(t);
@@ -396,7 +399,7 @@ vec3 palette(float t, float theme) {
     if (themeIndex == 7) return themeTetradic(t);
     if (themeIndex == 8) return themePastelTriad(t);
     
-    // Advanced color theory themes (9-17)
+
     if (themeIndex == 9) return themeBioluminescent(t);
     if (themeIndex == 10) return themeIridescent(t);
     if (themeIndex == 11) return themeChromatic(t);
@@ -407,12 +410,12 @@ vec3 palette(float t, float theme) {
     if (themeIndex == 16) return themeVelvet(t);
     if (themeIndex == 17) return themeSolarFlare(t);
     
-    // Dark themes - eye-friendly for extended sessions (18-20)
+
     if (themeIndex == 18) return themeVoidPulse(t);
     if (themeIndex == 19) return themeStarless(t);
     if (themeIndex == 20) return themeEventHorizon(t);
     
-    // New color theory themes (21-26)
+
     if (themeIndex == 21) return themeCyberpunk(t);
     if (themeIndex == 22) return themeCrimsonMono(t);
     if (themeIndex == 23) return themeEarthTones(t);

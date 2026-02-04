@@ -1,8 +1,15 @@
+
+
+
+
+
 // ============================================================================
 // LAYER: Kaleidoscope
 // Sacred geometry mirroring and mandala symmetry
+// OPTIMIZED: Quality-based pattern reduction, reduced feedback sampling
 // ============================================================================
 
+// Map UVs into a kaleidoscope wedge
 vec2 kaleidoscopeMap(vec2 uv, float slices) {
     float angle = atan(uv.y, uv.x);
     float radius = length(uv);
@@ -13,6 +20,7 @@ vec2 kaleidoscopeMap(vec2 uv, float slices) {
     return vec2(cos(angle), sin(angle)) * radius;
 }
 
+// Generate symmetric line patterns
 float kaleidoscopeLines(vec2 uv, float time, float treble, float distortion, float slices) {
     float r = length(uv);
     float angle = atan(uv.y, uv.x);
@@ -25,14 +33,18 @@ float kaleidoscopeLines(vec2 uv, float time, float treble, float distortion, flo
     float s = max(2.0, slices);
     float spokeCount = 3.0 + s * 0.5;
 
+    // Quality-based pattern reduction: fewer patterns on low quality
+    float q = clamp(uQualityLevel, 0.0, 1.0);
+    bool skipSecondaryPatterns = q < 0.4;
+    
     // Multi-frequency symmetric structure (rings + spokes + lattices + rosettes)
     float ringsA = smoothstep(0.02, 0.0, abs(sin(r * 8.0 - time * 0.6)));
-    float ringsB = smoothstep(0.015, 0.0, abs(sin(r * (12.0 + s * 0.2) + time * 0.35)));
+    float ringsB = skipSecondaryPatterns ? 0.0 : smoothstep(0.015, 0.0, abs(sin(r * (12.0 + s * 0.2) + time * 0.35)));
     float spokesA = smoothstep(0.02, 0.0, abs(sin(angle * spokeCount + time * 0.4)));
-    float spokesB = smoothstep(0.02, 0.0, abs(sin(angle * spokeCount * 2.0 - r * 6.0 + time * 0.9)));
+    float spokesB = skipSecondaryPatterns ? 0.0 : smoothstep(0.02, 0.0, abs(sin(angle * spokeCount * 2.0 - r * 6.0 + time * 0.9)));
     float latticeA = smoothstep(0.02, 0.0, abs(sin((uv.x + uv.y) * (6.0 + s * 0.2) - time * 0.2)));
-    float latticeB = smoothstep(0.02, 0.0, abs(sin((uv.x - uv.y) * (5.0 + s * 0.18) + time * 0.27)));
-    float rosette = smoothstep(0.02, 0.0, abs(sin(angle * s * 1.5 + r * 10.0 - time)));
+    float latticeB = skipSecondaryPatterns ? 0.0 : smoothstep(0.02, 0.0, abs(sin((uv.x - uv.y) * (5.0 + s * 0.18) + time * 0.27)));
+    float rosette = skipSecondaryPatterns ? 0.0 : smoothstep(0.02, 0.0, abs(sin(angle * s * 1.5 + r * 10.0 - time)));
 
     float pulse = 0.6 + 0.4 * sin(time * 0.6 + treble * TAU);
 
@@ -57,18 +69,39 @@ vec3 layerKaleidoscope(vec2 uv, float time, float treble, float intensity, float
     float finalSlices = slices + floor(tr * 4.0);
     
     vec2 kUv = kaleidoscopeMap(uv, finalSlices);
-    // Nested kaleidoscope fold adds symmetric complexity without extra params
-    vec2 kUv2 = kaleidoscopeMap(kUv * 1.35, max(3.0, finalSlices * 0.5 + 3.0));
-
-    float linesA = kaleidoscopeLines(kUv, time, treble, distortion, finalSlices);
-    float linesB = kaleidoscopeLines(kUv2, -time * 0.7, treble, distortion * 0.75, finalSlices + 4.0);
-    float lines = clamp(linesA * 0.65 + linesB * 0.65, 0.0, 1.0);
+    
+    float lines;
+    vec2 kUv2;
+    
+    // Quality-based complexity scaling
+    if (uQualityLevel < 0.3) {
+        // LOW QUALITY: Single pass, no nested fold
+        kUv2 = kUv; // Fallback
+        lines = kaleidoscopeLines(kUv, time, treble, distortion, finalSlices);
+    } else if (uQualityLevel < 0.7) {
+        // MEDIUM QUALITY: Nested fold but simpler calculation
+        kUv2 = kaleidoscopeMap(kUv * 1.35, max(3.0, finalSlices * 0.5 + 3.0));
+        lines = kaleidoscopeLines(kUv, time, treble, distortion, finalSlices) * 0.7 +
+                kaleidoscopeLines(kUv2, -time * 0.7, treble, 0.0, finalSlices) * 0.3;
+    } else {
+        // HIGH QUALITY: Full implementation
+        // Nested kaleidoscope fold adds symmetric complexity without extra params
+        kUv2 = kaleidoscopeMap(kUv * 1.35, max(3.0, finalSlices * 0.5 + 3.0));
+        float linesA = kaleidoscopeLines(kUv, time, treble, distortion, finalSlices);
+        float linesB = kaleidoscopeLines(kUv2, -time * 0.7, treble, distortion * 0.75, finalSlices + 4.0);
+        lines = clamp(linesA * 0.65 + linesB * 0.65, 0.0, 1.0);
+    }
 
     // Feedback sampling
     // We sample the feedback texture using the kaleidoscoped UVs
     vec2 sampleUv = mix(kUv, kUv2, 0.35 + 0.25 * tr);
     vec2 rdUv = fract(sampleUv * 0.5 + 0.5); // Map to 0-1 range
-    vec3 rd = texture2D(feedbackTex, rdUv).rgb;
+    
+    // Skip feedback sampling on low quality if feedback is low
+    vec3 rd = vec3(0.0);
+    if (uQualityLevel >= 0.3 || feedback > 0.0) {
+        rd = texture2D(feedbackTex, rdUv).rgb;
+    }
     
     // Use feedback green channel for organic pattern
     float organic = smoothstep(0.18, 0.75, rd.g);
