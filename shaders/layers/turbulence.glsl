@@ -35,11 +35,19 @@ float snoise(vec2 v) {
     return 130.0 * dot(m, g);
 }
 
-#define OCTAVES 6
-float turbulence(in vec2 st) {
+// Max octaves supported
+#define MAX_OCTAVES 6
+
+float turbulenceN(in vec2 st, int octaves) {
     float value = 0.0;
     float amplitude = 1.0;
-    for (int i = 0; i < OCTAVES; i++) {
+    int oct = octaves;
+    if (oct < 1) oct = 1;
+    if (oct > MAX_OCTAVES) oct = MAX_OCTAVES;
+    
+    // Unroll or loop up to max
+    for (int i = 0; i < MAX_OCTAVES; i++) {
+        if (i >= oct) break;
         value += amplitude * abs(snoise(st));
         st *= 2.0;
         amplitude *= 0.5;
@@ -47,23 +55,37 @@ float turbulence(in vec2 st) {
     return value;
 }
 
-vec3 layerTurbulence(vec2 uv, float time, float beat, float energy, float treble, float intensity, float theme) {
+vec3 layerTurbulence(vec2 uv, float time, float beat, float energy, float treble, float intensity, float theme, float complexity, float flow) {
     if (intensity <= 0.0) return vec3(0.0);
 
     vec2 st = uv * 0.5 + 0.5;
+    // Mirroring
     st.x = (st.x > 0.5) ? st.x : 1.0 - st.x;
     st.y = (st.y > 0.5) ? st.y : 1.0 - st.y;
 
     float beatBoost = 0.25 + beat * 0.75;
-    float t = time * (0.35 + energy * 0.8);
+    
+    // Flow controls direction and speed influence
+    float t = time * (0.35 + energy * 0.8) * (1.0 + abs(flow));
+    vec2 flowDir = vec2(cos(flow * PI), sin(flow * PI));
 
-    st.x += turbulence(st * (1.2 + treble * 0.6) + t) * 0.45 * beatBoost;
-    st.y += turbulence(st + vec2(1.0, 0.3) + t) * 0.25 * (0.6 + treble);
+    // Performance: warping doesn't need full octave detail.
+    // Keep the main field sharp while making the coordinate warp cheaper.
+    int octaves = int(complexity + 0.5);
+    if (octaves < 1) octaves = 1;
+    if (octaves > MAX_OCTAVES) octaves = MAX_OCTAVES;
+    int warpOctaves = octaves;
+    if (warpOctaves > 3) warpOctaves = 3;
 
-    float field = turbulence(st * (4.5 + energy * 5.0));
+    // Distort coordinates with noise
+    st.x += turbulenceN(st * (1.2 + treble * 0.6) + t * flowDir.x, warpOctaves) * 0.45 * beatBoost;
+    st.y += turbulenceN(st + vec2(1.0, 0.3) + t * flowDir.y, warpOctaves) * 0.25 * (0.6 + treble);
+
+    // Main pattern
+    float field = turbulenceN(st * (4.5 + energy * 5.0), octaves);
     float mask = smoothstep(0.2, 0.9, field);
 
-    float scale = intensity * 2.0;
+    float scaleOut = intensity * 1.0;
     vec3 color = palette(field * 0.9 + time * 0.08 + beat * 0.15, theme);
-    return color * mask * (0.4 + energy) * scale;
+    return color * mask * (0.4 + energy) * scaleOut;
 }

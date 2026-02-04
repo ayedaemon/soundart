@@ -19,76 +19,91 @@ uniform float uMouseSpeed;     // Velocity magnitude
 uniform float uMouseDown;      // Button pressed (0 or 1)
 uniform vec2 uMouseClick;      // Last click position
 
-uniform float uLayerFibonacci;
-uniform float uLayerFibonacciZoom;
-uniform float uLayerFibonacciPoints;
-uniform float uLayerFibonacciSpeed;
-uniform float uLayerFibonacciAngle;
-uniform float uLayerFibonacciTheme;
-uniform float uLayerFibonacciSensitivity;
-uniform float uLayerFibonacciMouseSens;
-uniform float uLayerFlower;
-uniform float uLayerFlowerZoom;
-uniform float uLayerFlowerTheme;
-uniform float uLayerFlowerSensitivity;
-uniform float uLayerFlowerMouseSens;
+// --- Layer Uniforms ---
+
+// Lissajous
 uniform float uLayerLissajous;
+uniform float uLayerLissajousSpeed;
 uniform float uLayerLissajousZoom;
 uniform float uLayerLissajousTheme;
-uniform float uLayerLissajousSensitivity;
-uniform float uLayerLissajousMouseSens;
+uniform float uLayerLissajousFrequencies;
+uniform float uLayerLissajousSlices;
+uniform float uLayerLissajousDamping;
+uniform float uLayerLissajousThickness;
+
+// Mandala
 uniform float uLayerMandala;
+uniform float uLayerMandalaSpeed;
 uniform float uLayerMandalaZoom;
 uniform float uLayerMandalaTheme;
-uniform float uLayerMandalaSensitivity;
-uniform float uLayerMandalaMouseSens;
+uniform float uLayerMandalaSegments;
+uniform float uLayerMandalaRotation;
+uniform float uLayerMandalaSymmetry;
+
+// Kaleidoscope
 uniform float uLayerKaleidoscope;
+uniform float uLayerKaleidoscopeSpeed;
 uniform float uLayerKaleidoscopeZoom;
 uniform float uLayerKaleidoscopeTheme;
-uniform float uLayerKaleidoscopeSensitivity;
-uniform float uLayerKaleidoscopeMouseSens;
+uniform float uLayerKaleidoscopeSlices;
+uniform float uLayerKaleidoscopeFeedback;
+uniform float uLayerKaleidoscopeDistortion;
+
+// Metatron
+uniform float uLayerMetatron;
+uniform float uLayerMetatronSpeed;
+uniform float uLayerMetatronZoom;
+uniform float uLayerMetatronTheme;
+uniform float uLayerMetatronRings;
+uniform float uLayerMetatronThickness;
+uniform float uLayerMetatronSpin;
+
+// Glow
 uniform float uLayerGlow;
+uniform float uLayerGlowSpeed;
 uniform float uLayerGlowZoom;
 uniform float uLayerGlowTheme;
-uniform float uLayerGlowSensitivity;
-uniform float uLayerGlowMouseSens;
+uniform float uLayerGlowCoreSize;
+uniform float uLayerGlowRingCount;
+uniform float uLayerGlowArcIntensity;
+
+// Starfield
 uniform float uLayerStarfield;
+uniform float uLayerStarfieldSpeed;
 uniform float uLayerStarfieldZoom;
 uniform float uLayerStarfieldTheme;
-uniform float uLayerStarfieldSensitivity;
-uniform float uLayerStarfieldMouseSens;
+uniform float uLayerStarfieldDensity;
+uniform float uLayerStarfieldWarp;
+uniform float uLayerStarfieldLayers;
+
+// Turbulence
 uniform float uLayerTurbulence;
+uniform float uLayerTurbulenceSpeed;
 uniform float uLayerTurbulenceZoom;
 uniform float uLayerTurbulenceTheme;
-uniform float uLayerTurbulenceSensitivity;
-uniform float uLayerTurbulenceMouseSens;
+uniform float uLayerTurbulenceComplexity;
+uniform float uLayerTurbulenceFlow;
+
+// Displacement
 uniform float uLayerDisplacement;
+uniform float uLayerDisplacementSpeed;
 uniform float uLayerDisplacementZoom;
 uniform float uLayerDisplacementTheme;
-uniform float uLayerDisplacementSensitivity;
-uniform float uLayerDisplacementMouseSens;
-uniform float uLayerCubescape;
-uniform float uLayerCubescapeZoom;
-uniform float uLayerCubescapeTheme;
-uniform float uLayerCubescapeSensitivity;
-uniform float uLayerCubescapeMouseSens;
-uniform float uLayerSpires;
-uniform float uLayerSpiresZoom;
-uniform float uLayerSpiresTheme;
-uniform float uLayerSpiresSensitivity;
-uniform float uLayerSpiresMouseSens;
+uniform float uLayerDisplacementStrength;
+uniform float uLayerDisplacementCellSize;
+uniform float uLayerDisplacementRipple;
+
+// Hopalong
 uniform float uLayerHopalong;
+uniform float uLayerHopalongSpeed;
 uniform float uLayerHopalongZoom;
 uniform float uLayerHopalongTheme;
-uniform float uLayerHopalongSensitivity;
-uniform float uLayerHopalongMouseSens;
-uniform float uLayerMetatron;
-uniform float uLayerMetatronZoom;
-uniform float uLayerMetatronRings;
-uniform float uLayerMetatronTheme;
-uniform float uLayerMetatronSensitivity;
-uniform float uLayerMetatronMouseSens;
-uniform sampler2D uReactionTex;
+uniform float uLayerHopalongDivergence;
+uniform float uLayerHopalongIterations;
+uniform float uLayerHopalongSlices;
+uniform float uLayerHopalongRotation;
+
+
 uniform sampler2D uFeedbackTex;
 uniform float uFeedbackReady;
 
@@ -98,19 +113,16 @@ varying vec2 vUv;
 #include "common/colors.glsl"
 #include "common/hash.glsl"
 
-#include "layers/fibonacci.glsl"
-#include "layers/flower.glsl"
 #include "layers/lissajous.glsl"
 #include "layers/mandala.glsl"
 #include "layers/kaleidoscope.glsl"
+#include "layers/metatron.glsl"
 #include "layers/glow.glsl"
 #include "layers/starfield.glsl"
 #include "layers/turbulence.glsl"
 #include "layers/displacement.glsl"
-#include "layers/cubescape.glsl"
-#include "layers/spires.glsl"
 #include "layers/hopalong.glsl"
-#include "layers/metatron.glsl"
+
 
 void main() {
     vec2 uv = vUv * 2.0 - 1.0;
@@ -120,116 +132,69 @@ void main() {
     vec2 mouseUV = uMouse * 2.0 - 1.0;
     mouseUV.x *= uResolution.x / max(uResolution.y, 1.0);
 
-    vec2 uvFibonacci = uv / max(0.001, uLayerFibonacciZoom);
-    vec2 uvFlower = uv / max(0.001, uLayerFlowerZoom);
-    vec2 uvLissajous = uv / max(0.001, uLayerLissajousZoom);
-    vec2 uvMandala = uv / max(0.001, uLayerMandalaZoom);
-    vec2 uvKaleidoscope = uv / max(0.001, uLayerKaleidoscopeZoom);
-    vec2 uvGlow = uv / max(0.001, uLayerGlowZoom);
-    vec2 uvStarfield = uv / max(0.001, uLayerStarfieldZoom);
-    vec2 uvTurbulence = uv / max(0.001, uLayerTurbulenceZoom);
-    vec2 uvDisplacement = uv / max(0.001, uLayerDisplacementZoom);
-    vec2 uvCubescape = uv / max(0.001, uLayerCubescapeZoom);
-    vec2 uvSpires = uv / max(0.001, uLayerSpiresZoom);
-    vec2 uvHopalong = uv / max(0.001, uLayerHopalongZoom);
-    vec2 uvMetatron = uv / max(0.001, uLayerMetatronZoom);
+    vec3 finalColor = vec3(0.0);
 
-    vec3 baseColor = vec3(0.0);
-    float beatFibonacci = uBeat * uLayerFibonacciSensitivity;
-    float beatFlower = uBeat * uLayerFlowerSensitivity;
-    float energyLissajous = uEnergy * uLayerLissajousSensitivity;
-    float beatMandala = uBeat * uLayerMandalaSensitivity;
-    float energyMandala = uEnergy * uLayerMandalaSensitivity;
-    float trebleKaleidoscope = uTreble * uLayerKaleidoscopeSensitivity;
-    float beatGlow = uBeat * uLayerGlowSensitivity;
-    float trebleGlow = uTreble * uLayerGlowSensitivity;
-    float beatStarfield = uBeat * uLayerStarfieldSensitivity;
-    float beatTurbulence = uBeat * uLayerTurbulenceSensitivity;
-    float energyTurbulence = uEnergy * uLayerTurbulenceSensitivity;
-    float trebleTurbulence = uTreble * uLayerTurbulenceSensitivity;
-    float beatDisplacement = uBeat * uLayerDisplacementSensitivity;
-    float energyDisplacement = uEnergy * uLayerDisplacementSensitivity;
-    float trebleDisplacement = uTreble * uLayerDisplacementSensitivity;
-    float beatCubescape = uBeat * uLayerCubescapeSensitivity;
-    float energyCubescape = uEnergy * uLayerCubescapeSensitivity;
-    float beatSpires = uBeat * uLayerSpiresSensitivity;
-    float energySpires = uEnergy * uLayerSpiresSensitivity;
-    float trebleSpires = uTreble * uLayerSpiresSensitivity;
-    float beatHopalong = uBeat * uLayerHopalongSensitivity;
-    float energyHopalong = uEnergy * uLayerHopalongSensitivity;
-    float beatMetatron = uBeat * uLayerMetatronSensitivity;
-    float energyMetatron = uEnergy * uLayerMetatronSensitivity;
+    // --- Geometric & Symmetry ---
 
-    baseColor += layerFibonacci(uvFibonacci, uTime, beatFibonacci, uLayerFibonacci, uLayerFibonacciPoints, uLayerFibonacciSpeed, uLayerFibonacciAngle, uLayerFibonacciTheme);
-    baseColor += layerFlower(uvFlower, uTime, beatFlower, uLayerFlower, uLayerFlowerTheme);
-    baseColor += layerLissajous(uvLissajous, uTime, energyLissajous, uLayerLissajous, uLayerLissajousTheme);
-    baseColor += layerMandala(uvMandala, uTime, beatMandala, energyMandala, uLayerMandala, uLayerMandalaTheme);
-    baseColor += layerKaleidoscope(
-        uvKaleidoscope,
-        uTime,
-        trebleKaleidoscope,
-        uLayerKaleidoscope,
-        uLayerKaleidoscopeTheme
-    );
-    baseColor += layerGlow(uvGlow, uTime, beatGlow, trebleGlow, uLayerGlow, uLayerGlowTheme);
-    baseColor += layerStarfield(uvStarfield, uTime, beatStarfield, uLayerStarfield, uLayerStarfieldTheme);
-    baseColor += layerTurbulence(
-        uvTurbulence,
-        uTime,
-        beatTurbulence,
-        energyTurbulence,
-        trebleTurbulence,
-        uLayerTurbulence,
-        uLayerTurbulenceTheme
-    );
-    baseColor += layerDisplacement(
-        uvDisplacement,
-        uTime,
-        beatDisplacement,
-        energyDisplacement,
-        trebleDisplacement,
-        uLayerDisplacement,
-        uLayerDisplacementTheme
-    );
-    baseColor += layerCubescape(
-        uvCubescape,
-        uTime,
-        beatCubescape,
-        energyCubescape,
-        uLayerCubescape,
-        uLayerCubescapeTheme
-    );
-    baseColor += layerSpires(
-        uvSpires,
-        uTime,
-        beatSpires,
-        energySpires,
-        trebleSpires,
-        uLayerSpires,
-        uLayerSpiresTheme
-    );
-    baseColor += layerHopalong(
-        uvHopalong,
-        uTime,
-        beatHopalong,
-        energyHopalong,
-        mouseUV,
-        uMouseSpeed,
-        uMouseDown,
-        uLayerHopalong,
-        uLayerHopalongMouseSens,
-        uLayerHopalongTheme
-    );
-    baseColor += layerMetatron(
-        uvMetatron,
-        uTime,
-        beatMetatron,
-        energyMetatron,
-        uLayerMetatron,
-        uLayerMetatronRings,
-        uLayerMetatronTheme
-    );
+    if (uLayerMandala > 0.001) {
+        vec2 uvL = uv / max(0.001, uLayerMandalaZoom);
+        vec3 layer = layerMandala(uvL, uTime * uLayerMandalaSpeed, uBeat, uEnergy, uLayerMandala, uLayerMandalaTheme, uLayerMandalaSegments, uLayerMandalaRotation, uLayerMandalaSymmetry);
+        finalColor += layer;
+    }
 
-    vec3 color = baseColor / (vec3(1.0) + baseColor);
+    if (uLayerKaleidoscope > 0.001) {
+        vec2 uvL = uv / max(0.001, uLayerKaleidoscopeZoom);
+        vec3 layer = layerKaleidoscope(uvL, uTime * uLayerKaleidoscopeSpeed, uTreble, uLayerKaleidoscope, uLayerKaleidoscopeTheme, uLayerKaleidoscopeSlices, uLayerKaleidoscopeFeedback, uLayerKaleidoscopeDistortion, uFeedbackTex);
+        finalColor += layer;
+    }
+
+    if (uLayerMetatron > 0.001) {
+        vec2 uvL = uv / max(0.001, uLayerMetatronZoom);
+        vec3 layer = layerMetatron(uvL, uTime * uLayerMetatronSpeed, uBeat, uEnergy, uLayerMetatron, uLayerMetatronTheme, uLayerMetatronRings, uLayerMetatronThickness, uLayerMetatronSpin);
+        finalColor += layer;
+    }
+
+    if (uLayerLissajous > 0.001) {
+        vec2 uvL = uv / max(0.001, uLayerLissajousZoom);
+        vec3 layer = layerLissajous(uvL, uTime, uEnergy, uLayerLissajous, uLayerLissajousTheme, uLayerLissajousSpeed, uLayerLissajousFrequencies, uLayerLissajousSlices, uLayerLissajousDamping, uLayerLissajousThickness);
+        finalColor += layer;
+    }
+
+    // --- Organic & Noise ---
+
+    if (uLayerTurbulence > 0.001) {
+        vec2 uvL = uv / max(0.001, uLayerTurbulenceZoom);
+        vec3 layer = layerTurbulence(uvL, uTime * uLayerTurbulenceSpeed, uBeat, uEnergy, uTreble, uLayerTurbulence, uLayerTurbulenceTheme, uLayerTurbulenceComplexity, uLayerTurbulenceFlow);
+        finalColor += layer;
+    }
+
+    if (uLayerDisplacement > 0.001) {
+        vec2 uvL = uv / max(0.001, uLayerDisplacementZoom);
+        vec3 layer = layerDisplacement(uvL, uTime * uLayerDisplacementSpeed, uBeat, uEnergy, uTreble, uLayerDisplacement, uLayerDisplacementTheme, uLayerDisplacementStrength, uLayerDisplacementCellSize, uLayerDisplacementRipple);
+        finalColor += layer;
+    }
+
+    if (uLayerGlow > 0.001) {
+        vec2 uvL = uv / max(0.001, uLayerGlowZoom);
+        vec3 layer = layerGlow(uvL, uTime * uLayerGlowSpeed, uBeat, uEnergy, uTreble, uLayerGlow, uLayerGlowTheme, uLayerGlowCoreSize, uLayerGlowRingCount, uLayerGlowArcIntensity);
+        finalColor += layer;
+    }
+
+    // --- 3D & Space ---
+
+    if (uLayerStarfield > 0.001) {
+        vec2 uvL = uv / max(0.001, uLayerStarfieldZoom);
+        vec3 layer = layerStarfield(uvL, uTime * uLayerStarfieldSpeed, uBeat, uEnergy, uTreble, uLayerStarfield, uLayerStarfieldTheme, uLayerStarfieldDensity, uLayerStarfieldWarp, uLayerStarfieldLayers);
+        finalColor += layer;
+    }
+
+    if (uLayerHopalong > 0.001) {
+        vec2 uvL = uv / max(0.001, uLayerHopalongZoom);
+        vec3 layer = layerHopalong(uvL, uTime * uLayerHopalongSpeed, uBeat, uEnergy, uTreble, uLayerHopalong, uLayerHopalongTheme, uLayerHopalongDivergence, uLayerHopalongIterations, uLayerHopalongSlices, uLayerHopalongRotation);
+        finalColor += layer;
+    }
+
+    // Tone mapping / Saturation control could go here
+    vec3 color = finalColor / (vec3(1.0) + finalColor);
     gl_FragColor = vec4(color, 1.0);
 }

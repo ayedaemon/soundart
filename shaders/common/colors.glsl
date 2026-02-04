@@ -293,10 +293,97 @@ vec3 themeEventHorizon(float t) {
     return mix(hawking, black, (x - 0.8) / 0.2);
 }
 
+// ============================================================================
+// NEW COLOR THEORY THEMES (21-26)
+// ============================================================================
+
+// Cyberpunk / Vaporwave - Hot pink, cyan, purple on dark base
+// Popular retro-futuristic aesthetic for electronic music
+vec3 themeCyberpunk(float t) {
+    vec3 void_ = vec3(0.05, 0.01, 0.13);   // Deep purple-black base
+    vec3 hotPink = vec3(1.0, 0.08, 0.58);  // #FF1493
+    vec3 cyan = vec3(0.0, 1.0, 1.0);       // #00FFFF
+    vec3 purple = vec3(0.58, 0.0, 0.83);   // #9400D3
+    
+    float x = fract(t) * 4.0;
+    if (x < 1.0) return mix(void_, hotPink, smoothstep(0.0, 1.0, x));
+    if (x < 2.0) return mix(hotPink, cyan, smoothstep(0.0, 1.0, x - 1.0));
+    if (x < 3.0) return mix(cyan, purple, smoothstep(0.0, 1.0, x - 2.0));
+    return mix(purple, void_, smoothstep(0.0, 1.0, x - 3.0));
+}
+
+// Crimson Mono - Monochromatic warm (single hue, luminance variation)
+// Balances the cool Starless Night theme
+vec3 themeCrimsonMono(float t) {
+    // Single hue (red ~0.0) with saturation and luminance variation
+    float hue = 0.0 + 0.02 * sin(t * TAU);  // Slight hue drift
+    float sat = 0.6 + 0.2 * sin(t * TAU * 2.0);
+    float lum = 0.1 + 0.4 * pow(sin(t * PI), 2.0);
+    
+    // Add warm cream accent at peaks
+    vec3 base = hsl2rgb(vec3(hue, sat, lum));
+    vec3 cream = vec3(0.96, 0.87, 0.7);  // #F5DEB3
+    float accent = pow(sin(t * PI), 8.0);  // Sharp peaks
+    
+    return mix(base, cream, accent * 0.4);
+}
+
+// Earth Tones - Natural organic palette
+// Terracotta, sage, sienna, clay - grounding aesthetic
+vec3 themeEarthTones(float t) {
+    vec3 terracotta = vec3(0.8, 0.45, 0.32);   // #CC7351
+    vec3 sage = vec3(0.61, 0.69, 0.53);        // #9CAF88
+    vec3 sienna = vec3(0.63, 0.32, 0.18);      // #A0522D
+    vec3 clay = vec3(0.72, 0.45, 0.2);         // #B87333
+    
+    return quadMix(terracotta, sage, sienna, clay, t);
+}
+
+// True Complement - Pure 180° complementary (blue/orange)
+// Maximum color tension for high-energy moments
+vec3 themeTrueComplement(float t) {
+    vec3 blue = vec3(0.0, 0.4, 1.0);      // #0066FF
+    vec3 orange = vec3(1.0, 0.4, 0.0);    // #FF6600
+    
+    // Sharp transition with slight overlap zone
+    float x = fract(t);
+    // Add energy pulse in transition zone
+    float energy = 1.0 + 0.15 * sin(t * TAU * 4.0);
+    
+    if (x < 0.45) return blue * energy;
+    if (x < 0.55) return mix(blue, orange, smoothstep(0.45, 0.55, x)) * energy;
+    return orange * energy;
+}
+
+// Noir - Luminance-dominant with single accent
+// Grayscale + cyan accent for dramatic value contrast
+vec3 themeNoir(float t) {
+    // Grayscale base with dramatic luminance curve
+    float lum = 0.05 + 0.5 * pow(sin(t * PI), 1.5);
+    vec3 gray = vec3(lum);
+    
+    // Cyan accent appears at luminance peaks
+    vec3 accent = vec3(0.0, 1.0, 1.0);
+    float accentStrength = pow(sin(t * PI), 6.0) * 0.6;
+    
+    return mix(gray, accent, accentStrength);
+}
+
+// Sepia - Vintage warm-tinted monochrome
+// Nostalgic aesthetic for acoustic/classical vibes
+vec3 themeSepia(float t) {
+    vec3 darkBrown = vec3(0.24, 0.14, 0.08);  // #3D2314
+    vec3 sepia = vec3(0.44, 0.26, 0.08);      // #704214
+    vec3 cream = vec3(0.96, 0.87, 0.7);       // #F5DEB3
+    vec3 antique = vec3(0.98, 0.92, 0.84);    // #FAEBD7
+    
+    return quadMix(darkBrown, sepia, cream, antique, t);
+}
+
 // Main palette selector
 vec3 palette(float t, float theme) {
     t = fract(t);
-    float clampedTheme = clamp(theme, 0.0, 20.0);
+    float clampedTheme = clamp(theme, 0.0, 26.0);
     int themeIndex = int(floor(clampedTheme + 0.5));
     
     // Original themes (0-8)
@@ -324,6 +411,14 @@ vec3 palette(float t, float theme) {
     if (themeIndex == 18) return themeVoidPulse(t);
     if (themeIndex == 19) return themeStarless(t);
     if (themeIndex == 20) return themeEventHorizon(t);
+    
+    // New color theory themes (21-26)
+    if (themeIndex == 21) return themeCyberpunk(t);
+    if (themeIndex == 22) return themeCrimsonMono(t);
+    if (themeIndex == 23) return themeEarthTones(t);
+    if (themeIndex == 24) return themeTrueComplement(t);
+    if (themeIndex == 25) return themeNoir(t);
+    if (themeIndex == 26) return themeSepia(t);
     
     return themeLSD(t);
 }
