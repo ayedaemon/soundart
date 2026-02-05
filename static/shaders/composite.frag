@@ -74,6 +74,7 @@ uniform float uLayerKaleidoscopeTheme;
 uniform float uLayerKaleidoscopeSlices;
 uniform float uLayerKaleidoscopeFeedback;
 uniform float uLayerKaleidoscopeDistortion;
+uniform float uLayerKaleidoscopeRaymarchMode;
 
 // Metatron
 uniform float uLayerMetatron;
@@ -188,7 +189,7 @@ void main() {
 
     if (uLayerKaleidoscope > 0.001) {
         vec2 uvL = uv / max(0.001, uLayerKaleidoscopeZoom);
-        vec3 layer = layerKaleidoscope(uvL, uTime * uLayerKaleidoscopeSpeed, uTreble, uLayerKaleidoscope, uLayerKaleidoscopeTheme, uLayerKaleidoscopeSlices, uLayerKaleidoscopeFeedback, uLayerKaleidoscopeDistortion, uFeedbackTex);
+        vec3 layer = layerKaleidoscope(uvL, uTime * uLayerKaleidoscopeSpeed, uBeat, uEnergy, uTreble, uLayerKaleidoscope, uLayerKaleidoscopeTheme, uLayerKaleidoscopeSlices, uLayerKaleidoscopeFeedback, uLayerKaleidoscopeDistortion, uLayerKaleidoscopeRaymarchMode, uFeedbackTex);
         finalColor += layer;
     }
 

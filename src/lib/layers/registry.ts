@@ -88,7 +88,8 @@ export const layerDefinitions: LayerDefinition[] = [
       ...createStandardParams('kaleidoscope', 'Kaleidoscope'),
       createInt('slices', 'Slices', 6, 6, 24, 'uLayerKaleidoscopeSlices'),
       createFloat('feedback', 'Feedback', 0.5, 0, 0.95, 'uLayerKaleidoscopeFeedback'),
-      createFloat('distortion', 'Distortion', 0.5, 0, 2, 'uLayerKaleidoscopeDistortion')
+      createFloat('distortion', 'Distortion', 0.5, 0, 2, 'uLayerKaleidoscopeDistortion'),
+      createFloat('raymarchMode', '3D Mode', 0.0, 0.0, 1.0, 'uLayerKaleidoscopeRaymarchMode', 0.05, true, 0.0, 0.7)
     ],
     shaderPath: 'layers/kaleidoscope.glsl',
     randomizable: true
@@ -331,7 +332,7 @@ export const layerDefinitions: LayerDefinition[] = [
       ...createStandardParams('glow', 'Glow'),
       createFloat('coreSize', 'Core Size', 0.5, 0.1, 2.0, 'uLayerGlowCoreSize'),
       createInt('ringCount', 'Ring Count', 3, 0, 10, 'uLayerGlowRingCount'),
-      createFloat('arcIntensity', 'Arc Intensity', 0.5, 0.0, 2.0, 'uLayerGlowArcIntensity')
+      createFloat('arcIntensity', 'Arc Intensity', 0.5, 0.0, 10.0, 'uLayerGlowArcIntensity')
     ],
     shaderPath: 'layers/glow.glsl',
     randomizable: true
