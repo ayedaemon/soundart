@@ -365,6 +365,19 @@ export const layerDefinitions: LayerDefinition[] = [
     shaderPath: 'layers/hopalong.glsl',
     randomizable: true
   },
+  {
+    id: 'fractal',
+    label: 'Fractal Pattern',
+    description: 'Fractal patterns with palette-based coloring',
+    properties: [
+      ...createStandardParams('fractal', 'Fractal'),
+      createFloat('iterations', 'Iterations', 3.5, 1.0, 5.0, 'uLayerFractalIterations', 0.1, true, 2.0, 4.5),
+      createFloat('scale', 'Scale', 1.0, 0.1, 4.0, 'uLayerFractalScale', 0.05, true, 0.3, 1.5),
+      createFloat('power', 'Power', 1.2, 0.5, 2.5, 'uLayerFractalPower', 0.05, true, 0.8, 1.8)
+    ],
+    shaderPath: 'layers/fractal.glsl',
+    randomizable: true
+  },
 
 ];
 
