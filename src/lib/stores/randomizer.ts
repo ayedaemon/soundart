@@ -317,17 +317,20 @@ export function updateRandomizer(beat: number): void {
         
         // Handle numeric properties
         if ((prop.type === 'float' || prop.type === 'int') && prop.min !== undefined && prop.max !== undefined) {
-          const min = prop.randomMin ?? prop.min;
-          const max = prop.randomMax ?? prop.max;
+          // Use randomMin/randomMax for generation range, but always clamp to slider min/max
+          const randomMin = prop.randomMin ?? prop.min;
+          const randomMax = prop.randomMax ?? prop.max;
+          const sliderMin = prop.min;
+          const sliderMax = prop.max;
           
           // Calculate new value
           let targetValue: number;
           
           // Full range jump or small step?
           if (prop.type === 'int' || (prop.step && prop.step >= 1)) {
-            targetValue = randomInt(min, max);
+            targetValue = randomInt(randomMin, randomMax);
           } else {
-            targetValue = randomInRange(min, max);
+            targetValue = randomInRange(randomMin, randomMax);
           }
           
           // For non-chaos modes, limit the jump size to keep transitions smoother
@@ -335,12 +338,12 @@ export function updateRandomizer(beat: number): void {
           if (settings.randomizerMode !== 'chaos') {
             const current = state.properties[prop.id] as number;
             const jumpScale = settings.randomizerMode === 'subtle' ? 0.1 : 0.3;
-            const range = max - min;
+            const range = randomMax - randomMin;
             const maxJump = range * jumpScale;
             
-            // Clamp new target within a window around current value
-            const lower = Math.max(min, current - maxJump);
-            const upper = Math.min(max, current + maxJump);
+            // Clamp new target within a window around current value, respecting slider bounds
+            const lower = Math.max(sliderMin, Math.max(randomMin, current - maxJump));
+            const upper = Math.min(sliderMax, Math.min(randomMax, current + maxJump));
             
             if (prop.step && prop.step >= 1) {
                targetValue = randomInt(Math.floor(lower), Math.ceil(upper));
@@ -349,6 +352,8 @@ export function updateRandomizer(beat: number): void {
             }
           }
           
+          // Always clamp final value to slider bounds
+          targetValue = Math.max(sliderMin, Math.min(sliderMax, targetValue));
           state.properties[prop.id] = targetValue;
           continue;
         }
@@ -416,27 +421,32 @@ export function randomizeLayerNow(layerId: string): void {
         continue;
       }
       if ((prop.type === 'float' || prop.type === 'int') && prop.min !== undefined && prop.max !== undefined) {
-        const min = prop.randomMin ?? prop.min;
-        const max = prop.randomMax ?? prop.max;
+        // Use randomMin/randomMax for generation range, but always clamp to slider min/max
+        const randomMin = prop.randomMin ?? prop.min;
+        const randomMax = prop.randomMax ?? prop.max;
+        const sliderMin = prop.min;
+        const sliderMax = prop.max;
         let targetValue: number;
         if (prop.type === 'int' || (prop.step && prop.step >= 1)) {
-          targetValue = randomInt(min, max);
+          targetValue = randomInt(randomMin, randomMax);
         } else {
-          targetValue = randomInRange(min, max);
+          targetValue = randomInRange(randomMin, randomMax);
         }
         if (settings.randomizerMode !== 'chaos') {
           const current = state.properties[prop.id] as number;
           const jumpScale = settings.randomizerMode === 'subtle' ? 0.1 : 0.3;
-          const range = max - min;
+          const range = randomMax - randomMin;
           const maxJump = range * jumpScale;
-          const lower = Math.max(min, current - maxJump);
-          const upper = Math.min(max, current + maxJump);
+          const lower = Math.max(sliderMin, Math.max(randomMin, current - maxJump));
+          const upper = Math.min(sliderMax, Math.min(randomMax, current + maxJump));
           if (prop.step && prop.step >= 1) {
             targetValue = randomInt(Math.floor(lower), Math.ceil(upper));
           } else {
             targetValue = randomInRange(lower, upper);
           }
         }
+        // Always clamp final value to slider bounds
+        targetValue = Math.max(sliderMin, Math.min(sliderMax, targetValue));
         state.properties[prop.id] = targetValue;
       }
     }
