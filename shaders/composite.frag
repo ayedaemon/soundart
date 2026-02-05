@@ -74,6 +74,7 @@ uniform float uLayerKaleidoscopeTheme;
 uniform float uLayerKaleidoscopeSlices;
 uniform float uLayerKaleidoscopeFeedback;
 uniform float uLayerKaleidoscopeDistortion;
+uniform float uLayerKaleidoscopeRaymarchMode;
 
 // Metatron
 uniform float uLayerMetatron;
@@ -129,6 +130,15 @@ uniform float uLayerHopalongIterations;
 uniform float uLayerHopalongSlices;
 uniform float uLayerHopalongRotation;
 
+// Fractal
+uniform float uLayerFractal;
+uniform float uLayerFractalSpeed;
+uniform float uLayerFractalZoom;
+uniform float uLayerFractalTheme;
+uniform float uLayerFractalIterations;
+uniform float uLayerFractalScale;
+uniform float uLayerFractalPower;
+
 
 uniform sampler2D uFeedbackTex; // Texture containing the previous frame
 uniform float uFeedbackReady;   // Flag indicating if feedback texture is populated
@@ -151,6 +161,7 @@ varying vec2 vUv; // Texture coordinates from vertex shader
 #include "layers/turbulence.glsl"
 #include "layers/displacement.glsl"
 #include "layers/hopalong.glsl"
+#include "layers/fractal.glsl"
 
 
 void main() {
@@ -178,7 +189,7 @@ void main() {
 
     if (uLayerKaleidoscope > 0.001) {
         vec2 uvL = uv / max(0.001, uLayerKaleidoscopeZoom);
-        vec3 layer = layerKaleidoscope(uvL, uTime * uLayerKaleidoscopeSpeed, uTreble, uLayerKaleidoscope, uLayerKaleidoscopeTheme, uLayerKaleidoscopeSlices, uLayerKaleidoscopeFeedback, uLayerKaleidoscopeDistortion, uFeedbackTex);
+        vec3 layer = layerKaleidoscope(uvL, uTime * uLayerKaleidoscopeSpeed, uBeat, uEnergy, uTreble, uLayerKaleidoscope, uLayerKaleidoscopeTheme, uLayerKaleidoscopeSlices, uLayerKaleidoscopeFeedback, uLayerKaleidoscopeDistortion, uLayerKaleidoscopeRaymarchMode, uFeedbackTex);
         finalColor += layer;
     }
 
@@ -245,6 +256,12 @@ void main() {
     if (uLayerHopalong > 0.001) {
         vec2 uvL = uv / max(0.001, uLayerHopalongZoom);
         vec3 layer = layerHopalong(uvL, uTime * uLayerHopalongSpeed, uBeat, uEnergy, uTreble, uLayerHopalong, uLayerHopalongTheme, uLayerHopalongDivergence, uLayerHopalongIterations, uLayerHopalongSlices, uLayerHopalongRotation);
+        finalColor += layer;
+    }
+
+    if (uLayerFractal > 0.001) {
+        vec2 uvL = uv / max(0.001, uLayerFractalZoom);
+        vec3 layer = layerFractal(uvL, uTime * uLayerFractalSpeed, uBeat, uEnergy, uTreble, uLayerFractal, uLayerFractalTheme, uLayerFractalIterations, uLayerFractalScale, uLayerFractalPower);
         finalColor += layer;
     }
 
